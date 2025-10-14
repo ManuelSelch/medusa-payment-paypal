@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2024-10-13
+
+### ⚠️ BREAKING CHANGES
+- **SDK Migration**: Migrated from `@paypal/checkout-server-sdk` (deprecated) to `@paypal/paypal-server-sdk` (latest)
+- Removed hybrid SDK approach in favor of unified SDK implementation
+- All functionality now uses the latest PayPal Server SDK
+
+### Changed
+- 🔄 **Unified SDK**: Replaced hybrid SDK architecture with single `@paypal/paypal-server-sdk`
+- ✨ **Core Payments**: All Orders and Payments API calls now use new SDK controllers
+  - `OrdersController.createOrder()` for order creation
+  - `OrdersController.captureOrder()` for payment capture
+  - `OrdersController.getOrder()` for status retrieval
+  - `PaymentsController.refundCapturedPayment()` for refunds
+- 🎯 **Vault API**: Vault functionality continues to use same SDK (no changes)
+- 📝 **TypeScript**: Improved type safety with latest SDK type definitions
+
+### Removed
+- ❌ `@paypal/checkout-server-sdk` dependency (deprecated by PayPal)
+- ❌ `@types/paypal__checkout-server-sdk` dev dependency
+
+### Why This Update?
+PayPal's `@paypal/checkout-server-sdk` is no longer maintained. The new `@paypal/paypal-server-sdk` provides:
+- ✅ Continued maintenance and security updates
+- ✅ Complete feature parity for Orders and Payments APIs
+- ✅ Better TypeScript support
+- ✅ Unified API design across all PayPal services
+
+### Migration Guide
+No changes required for most users! The provider interface remains the same. Simply update the package:
+
+```bash
+npm install @rd1988/medusa-payment-paypal@^2.0.0
+```
+
+The payment flow, Vault API, and all configuration remain unchanged.
+
 ## [1.0.0] - 2024-10-13
 
 ### Added

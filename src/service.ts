@@ -1,9 +1,10 @@
 /**
  * PayPal Payment Provider for Medusa 2.10+
  * 
- * 混合 SDK 方案：
- * - @paypal/checkout-server-sdk: 核心支付功能（稳定）
- * - @paypal/paypal-server-sdk: Vault API（保存支付方式）
+ * 使用最新的 @paypal/paypal-server-sdk 统一实现所有功能：
+ * - Orders API：创建订单、捕获、查询
+ * - Payments API：退款处理
+ * - Vault API：保存支付方式、账户管理
  * 
  * 基于官方 @medusajs/payment-stripe 的实现模式
  * 参考：https://github.com/medusajs/medusa/tree/develop/packages/modules/providers/payment-stripe
@@ -48,11 +49,14 @@ import {
   MedusaError,
   PaymentActions,
 } from "@medusajs/framework/utils"
-import * as paypal from "@paypal/checkout-server-sdk"
 import { 
-  Client as PayPalVaultClient,
+  Client,
   Environment,
-  VaultController
+  OrdersController,
+  PaymentsController,
+  VaultController,
+  CheckoutPaymentIntent,
+  Order
 } from "@paypal/paypal-server-sdk"
 
 interface PayPalOptions {
@@ -61,19 +65,11 @@ interface PayPalOptions {
   isSandbox?: boolean
 }
 
-type PayPalOrder = {
-  id: string
-  status: string
-  purchase_units?: any[]
-  [key: string]: any
-}
-
 export default class PayPalProviderService extends AbstractPaymentProvider<PayPalOptions> {
   static identifier = "paypal"
   
   protected readonly options_: PayPalOptions
-  protected readonly client_: paypal.core.PayPalHttpClient
-  protected readonly vaultClient_: PayPalVaultClient
+  protected readonly client_: Client
   
   static validateOptions(options: PayPalOptions): void {
     if (!options.clientId) {
@@ -95,20 +91,12 @@ export default class PayPalProviderService extends AbstractPaymentProvider<PayPa
     
     this.options_ = options
     
-    // Initialize PayPal Orders/Payments client (旧 SDK - 稳定)
-    const environment = options.isSandbox
-      ? new paypal.core.SandboxEnvironment(options.clientId, options.clientSecret)
-      : new paypal.core.LiveEnvironment(options.clientId, options.clientSecret)
-    
-    this.client_ = new paypal.core.PayPalHttpClient(environment)
-    
-    // Initialize PayPal Vault client (新 SDK - Vault API)
-    this.vaultClient_ = new PayPalVaultClient({
+    // Initialize PayPal client (新 SDK - 统一客户端)
+    this.client_ = new Client({
       clientCredentialsAuthCredentials: {
         oAuthClientId: options.clientId,
         oAuthClientSecret: options.clientSecret,
       },
-      // 使用 Environment 枚举
       environment: options.isSandbox ? Environment.Sandbox : Environment.Production
     })
   }
@@ -125,27 +113,31 @@ export default class PayPalProviderService extends AbstractPaymentProvider<PayPa
   ): Promise<InitiatePaymentOutput> {
     const { currency_code, amount, data, context } = input
     
-    const request = new paypal.orders.OrdersCreateRequest()
-    request.requestBody({
-      intent: "CAPTURE",
-      purchase_units: [{
-        amount: {
-          currency_code: currency_code.toUpperCase(),
-          value: ((amount as number) / 100).toFixed(2) // cents to dollars
-        },
-        custom_id: (data?.session_id as string) || undefined
-      }],
-      application_context: {
-        user_action: "PAY_NOW"
-      }
-    })
+    const ordersController = new OrdersController(this.client_)
     
     try {
-      const order = await this.client_.execute(request)
+      const response = await ordersController.createOrder({
+        body: {
+          intent: CheckoutPaymentIntent.Capture,
+          purchaseUnits: [{
+            amount: {
+              currencyCode: currency_code.toUpperCase(),
+              value: ((amount as number) / 100).toFixed(2) // cents to dollars
+            },
+            customId: (data?.session_id as string) || undefined
+          }],
+          applicationContext: {
+            userAction: "PAY_NOW" as any
+          }
+        },
+        prefer: "return=representation"
+      })
+      
+      const order = response.result
       
       return {
-        id: order.result.id,
-        ...this.getStatus(order.result as PayPalOrder)
+        id: order.id!,
+        ...this.getStatus(order)
       }
     } catch (error: any) {
       throw new MedusaError(
@@ -178,13 +170,17 @@ export default class PayPalProviderService extends AbstractPaymentProvider<PayPa
       )
     }
     
+    const ordersController = new OrdersController(this.client_)
+    
     try {
       // PayPal CAPTURE intent: authorize时执行捕获
-      const request = new paypal.orders.OrdersCaptureRequest(orderId)
-      const capture = await this.client_.execute(request)
+      const response = await ordersController.captureOrder({
+        id: orderId,
+        prefer: "return=representation"
+      })
       
       // 返回 CAPTURED 状态
-      return this.getStatus(capture.result as PayPalOrder)
+      return this.getStatus(response.result)
     } catch (error: any) {
       // 如果已经被捕获（422错误），获取状态
       if (error.statusCode === 422) {
@@ -251,11 +247,14 @@ export default class PayPalProviderService extends AbstractPaymentProvider<PayPa
       }
     }
     
+    const ordersController = new OrdersController(this.client_)
+    
     try {
-      const request = new paypal.orders.OrdersGetRequest(orderId)
-      const order = await this.client_.execute(request)
+      const response = await ordersController.getOrder({
+        id: orderId
+      })
       
-      return this.getStatus(order.result as PayPalOrder)
+      return this.getStatus(response.result)
     } catch (error) {
       return {
         status: PaymentSessionStatus.ERROR,
@@ -282,24 +281,27 @@ export default class PayPalProviderService extends AbstractPaymentProvider<PayPa
       )
     }
     
-    const request = new paypal.payments.CapturesRefundRequest(captureId)
-    
-    if (amount && typeof amount === 'number') {
-      // Get currency from data
-      const currencyCode = (data?.purchase_units?.[0]?.amount?.currency_code || 'USD') as string
-      request.requestBody({
-        amount: {
-          currency_code: currencyCode.toUpperCase(),
-          value: (amount / 100).toFixed(2)
-        },
-        invoice_id: "",  // PayPal SDK 要求的字段
-        note_to_payer: "" // PayPal SDK 要求的字段
-      } as any) // 使用 any 避免严格类型检查
-    }
+    const paymentsController = new PaymentsController(this.client_)
     
     try {
-      const refund = await this.client_.execute(request)
-      return { data: refund.result as unknown as Record<string, unknown> }
+      const refundRequest: any = {}
+      
+      if (amount && typeof amount === 'number') {
+        // Get currency from data
+        const currencyCode = (data?.purchase_units?.[0]?.amount?.currency_code || 'USD') as string
+        refundRequest.amount = {
+          currencyCode: currencyCode.toUpperCase(),
+          value: (amount / 100).toFixed(2)
+        }
+      }
+      
+      const response = await paymentsController.refundCapturedPayment({
+        captureId: captureId,
+        body: refundRequest,
+        prefer: "return=representation"
+      })
+      
+      return { data: response.result as unknown as Record<string, unknown> }
     } catch (error: any) {
       throw new MedusaError(
         MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
@@ -411,7 +413,7 @@ export default class PayPalProviderService extends AbstractPaymentProvider<PayPa
    * - REQUIRES_MORE: 需要更多操作
    * - ERROR: 错误
    */
-  private getStatus(paypalOrder: PayPalOrder): {
+  private getStatus(paypalOrder: Order): {
     data: Record<string, unknown>
     status: PaymentSessionStatus
   } {
@@ -580,10 +582,9 @@ export default class PayPalProviderService extends AbstractPaymentProvider<PayPa
       )
     }
     
+    const vaultController = new VaultController(this.client_)
+    
     try {
-      // 使用新 SDK 的 Vault controller 创建 Setup Token
-      const vaultController = new VaultController(this.vaultClient_)
-      
       const setupTokenRequest = {
         payment_source: {
           card: data?.card || {},  // 卡片信息
@@ -624,10 +625,9 @@ export default class PayPalProviderService extends AbstractPaymentProvider<PayPa
       return []
     }
     
+    const vaultController = new VaultController(this.client_)
+    
     try {
-      // 使用新 SDK 的 Vault controller 获取客户的支付方式
-      const vaultController = new VaultController(this.vaultClient_)
-      
       const response = await vaultController.listCustomerPaymentTokens({
         customerId: accountHolderId,
         pageSize: 100

@@ -18,19 +18,18 @@
 - ✅ **Setup Tokens** - 安全地收集和存储支付信息
 
 ### 技术亮点
-- 🔄 混合 SDK 方案
-  - `@paypal/checkout-server-sdk`: 稳定的核心支付功能
-  - `@paypal/paypal-server-sdk`: 最新的 Vault API
-- 📝 完整的 TypeScript 类型支持
-- 🛡️ 错误处理和验证
-- 🎯 基于官方 Stripe provider 的实现模式
+- ✨ **统一 SDK** - 使用最新的 `@paypal/paypal-server-sdk` 实现所有功能
+- 📝 **完整的 TypeScript 类型支持**
+- 🛡️ **错误处理和验证**
+- 🎯 **基于官方 Stripe provider 的实现模式**
+- 🚀 **持续维护** - 跟随 PayPal 官方最新 SDK 更新
 
 ## 📦 安装
 
 ```bash
-npm install @yourscope/medusa-payment-paypal
+npm install @rd1988/medusa-payment-paypal
 # or
-yarn add @yourscope/medusa-payment-paypal
+yarn add @rd1988/medusa-payment-paypal
 ```
 
 ## 🚀 使用
@@ -50,7 +49,7 @@ export default defineConfig({
       options: {
         providers: [
           {
-            resolve: "@yourscope/medusa-payment-paypal",
+            resolve: "@rd1988/medusa-payment-paypal",
             id: "paypal",
             options: {
               clientId: process.env.PAYPAL_CLIENT_ID,
@@ -132,7 +131,7 @@ import { sdk } from "@/lib/medusa"
 
 // 1. 初始化 PayPal 支付会话
 const paymentSession = await sdk.store.payment.initiatePaymentSession(cartId, {
-  provider_id: "pp_paypal_paypal", // pp_{module_id}_{identifier}
+  provider_id: "pp_payment_paypal", // pp_{module_id}_{identifier}
 })
 
 // 2. 加载 PayPal SDK
@@ -156,7 +155,7 @@ document.body.appendChild(script)
 ```typescript
 // 保存客户的支付方式
 const paymentMethod = await sdk.store.payment.savePaymentMethod({
-  provider_id: "pp_paypal_paypal",
+  provider_id: "pp_payment_paypal",
   data: {
     card: {
       // 卡片信息

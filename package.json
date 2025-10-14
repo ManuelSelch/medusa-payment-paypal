@@ -1,7 +1,7 @@
 {
   "name": "@rd1988/medusa-payment-paypal",
-  "version": "1.0.0",
-  "description": "PayPal Payment Provider for Medusa v2.10+ with full Vault API support",
+  "version": "2.0.1",
+  "description": "PayPal Payment Provider for Medusa v2.10+ using the latest PayPal Server SDK with full Vault API support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,10 +12,15 @@
     "medusa",
     "medusa-plugin",
     "medusa-payment",
+    "medusa-v2",
+    "medusa-2.0",
+    "medusa-2.10",
     "paypal",
     "payment-provider",
     "vault-api",
-    "e-commerce"
+    "e-commerce",
+    "paypal-server-sdk",
+    "headless-commerce"
   ],
   "author": "rd1988",
   "license": "MIT",
@@ -28,20 +33,19 @@
     "@medusajs/utils": "^2.10.0"
   },
   "dependencies": {
-    "@paypal/checkout-server-sdk": "^1.0.3",
     "@paypal/paypal-server-sdk": "^1.1.0"
   },
   "devDependencies": {
     "@medusajs/framework": "^2.10.3",
     "@medusajs/utils": "^2.10.3",
     "@types/node": "^20.0.0",
-    "@types/paypal__checkout-server-sdk": "^1.0.8",
     "typescript": "^5.3.0"
   },
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=18.0.0"
