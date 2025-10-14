@@ -1,30 +1,30 @@
 # Medusa Payment PayPal
 
-完整的 PayPal Payment Provider for Medusa v2.10+，支持 Vault API（保存支付方式）。
+Complete PayPal Payment Provider for Medusa v2.10+ with full Vault API support.
 
-## ✨ 特性
+## ✨ Features
 
-### 核心支付功能
-- ✅ 创建订单 (Orders API)
-- ✅ 支付授权和捕获
-- ✅ 退款处理
-- ✅ Webhook 集成
-- ✅ 沙箱和生产环境支持
+### Core Payment Capabilities
+- ✅ Order creation (Orders API)
+- ✅ Payment authorization and capture
+- ✅ Refund processing
+- ✅ Webhook integration
+- ✅ Sandbox and production environment support
 
-### 高级功能 (Vault API)
-- ✅ **保存支付方式** - 客户可以保存信用卡以便快速结账
-- ✅ **列出支付方式** - 查看已保存的支付方式
-- ✅ **客户账户管理** - 创建、更新、删除客户账户
-- ✅ **Setup Tokens** - 安全地收集和存储支付信息
+### Advanced Features (Vault API)
+- ✅ **Save Payment Methods** - Customers can save credit cards for faster checkout
+- ✅ **List Payment Methods** - View saved payment methods
+- ✅ **Customer Account Management** - Create, update, delete customer accounts
+- ✅ **Setup Tokens** - Securely collect and store payment information
 
-### 技术亮点
-- ✨ **统一 SDK** - 使用最新的 `@paypal/paypal-server-sdk` 实现所有功能
-- 📝 **完整的 TypeScript 类型支持**
-- 🛡️ **错误处理和验证**
-- 🎯 **基于官方 Stripe provider 的实现模式**
-- 🚀 **持续维护** - 跟随 PayPal 官方最新 SDK 更新
+### Technical Highlights
+- ✨ **Unified SDK** - Implements all features using the latest `@paypal/paypal-server-sdk`
+- 📝 **Full TypeScript support**
+- 🛡️ **Error handling and validation**
+- 🎯 **Based on official Stripe provider implementation pattern**
+- 🚀 **Actively maintained** - Follows PayPal's latest SDK updates
 
-## 📦 安装
+## 📦 Installation
 
 ```bash
 npm install @rd1988/medusa-payment-paypal
@@ -32,11 +32,11 @@ npm install @rd1988/medusa-payment-paypal
 yarn add @rd1988/medusa-payment-paypal
 ```
 
-## 🚀 使用
+## 🚀 Usage
 
-### 1. 配置 Medusa
+### 1. Configure Medusa
 
-在 `medusa-config.ts` 中添加 provider：
+Add the provider in `medusa-config.ts`:
 
 ```typescript
 import { defineConfig } from "@medusajs/framework/utils"
@@ -64,152 +64,151 @@ export default defineConfig({
 })
 ```
 
-### 2. 环境变量
+### 2. Environment Variables
 
-创建 `.env` 文件：
+Create a `.env` file:
 
 ```bash
-# PayPal 沙箱环境
+# PayPal Sandbox Environment
 PAYPAL_CLIENT_ID=your_sandbox_client_id
 PAYPAL_CLIENT_SECRET=your_sandbox_client_secret
 PAYPAL_IS_SANDBOX=true
 
-# PayPal 生产环境
+# PayPal Production Environment
 # PAYPAL_CLIENT_ID=your_production_client_id
 # PAYPAL_CLIENT_SECRET=your_production_client_secret
 # PAYPAL_IS_SANDBOX=false
 ```
 
-### 3. 获取 PayPal 凭证
+### 3. Get PayPal Credentials
 
-1. 访问 [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/)
-2. 创建应用获取 Client ID 和 Secret
-3. 配置沙箱测试账号
+1. Visit [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/)
+2. Create an app to get Client ID and Secret
+3. Configure sandbox test accounts
 
-### 4. 在 Admin 中启用
+### 4. Enable in Admin
 
-1. 登录 Medusa Admin
-2. 前往 Settings → Regions
-3. 为对应的 region 启用 PayPal payment provider
+1. Log in to Medusa Admin
+2. Go to Settings → Regions
+3. Enable PayPal payment provider for your region
 
-## 🔧 配置选项
+## 🔧 Configuration Options
 
-| 选项 | 类型 | 必需 | 描述 |
-|------|------|------|------|
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
 | `clientId` | string | ✅ | PayPal Client ID |
 | `clientSecret` | string | ✅ | PayPal Client Secret |
-| `isSandbox` | boolean | ❌ | 是否使用沙箱环境（默认 `false`） |
+| `isSandbox` | boolean | ❌ | Use sandbox environment (default `false`) |
 
-## 📝 支持的方法
+## 📝 Supported Methods
 
-### 核心支付
-- `initiatePayment` - 创建 PayPal 订单
-- `authorizePayment` - 授权并捕获支付
-- `capturePayment` - 捕获已授权的支付
-- `cancelPayment` - 取消支付
-- `refundPayment` - 退款
-- `retrievePayment` - 获取支付状态
-- `updatePayment` - 更新支付（重新创建订单）
-- `getWebhookActionAndData` - 处理 PayPal Webhook
+### Core Payment
+- `initiatePayment` - Create PayPal order
+- `authorizePayment` - Authorize and capture payment
+- `capturePayment` - Capture authorized payment
+- `cancelPayment` - Cancel payment
+- `refundPayment` - Process refund
+- `retrievePayment` - Get payment status
+- `updatePayment` - Update payment (recreate order)
+- `getWebhookActionAndData` - Handle PayPal webhooks
 
-### 账户管理
-- `createAccountHolder` - 创建客户账户
-- `updateAccountHolder` - 更新客户信息
-- `deleteAccountHolder` - 删除客户账户
+### Account Management
+- `createAccountHolder` - Create customer account
+- `updateAccountHolder` - Update customer information
+- `deleteAccountHolder` - Delete customer account
 
-### 支付方式管理 (Vault API)
-- `savePaymentMethod` - 保存客户支付方式
-- `listPaymentMethods` - 列出已保存的支付方式
+### Payment Method Management (Vault API)
+- `savePaymentMethod` - Save customer payment method
+- `listPaymentMethods` - List saved payment methods
 
-## 🎨 前端集成
+## 🎨 Frontend Integration
 
-### 基础支付流程
+### Basic Payment Flow
 
 ```typescript
-// 在结账页面
+// In checkout page
 import { sdk } from "@/lib/medusa"
 
-// 1. 初始化 PayPal 支付会话
+// 1. Initialize PayPal payment session
 const paymentSession = await sdk.store.payment.initiatePaymentSession(cartId, {
   provider_id: "pp_payment_paypal", // pp_{module_id}_{identifier}
 })
 
-// 2. 加载 PayPal SDK
+// 2. Load PayPal SDK
 const script = document.createElement('script')
 script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`
 script.onload = () => {
   window.paypal.Buttons({
-    createOrder: () => paymentSession.data.id, // 使用 Medusa 创建的订单 ID
+    createOrder: () => paymentSession.data.id, // Use Medusa-created order ID
     onApprove: async () => {
-      // 3. 完成订单
+      // 3. Complete order
       const order = await sdk.store.cart.complete(cartId)
-      // 跳转到订单确认页
+      // Redirect to order confirmation page
     }
   }).render('#paypal-button-container')
 }
 document.body.appendChild(script)
 ```
 
-### 保存支付方式（可选）
+### Save Payment Method (Optional)
 
 ```typescript
-// 保存客户的支付方式
+// Save customer payment method
 const paymentMethod = await sdk.store.payment.savePaymentMethod({
   provider_id: "pp_payment_paypal",
   data: {
     card: {
-      // 卡片信息
+      // Card information
     }
   }
 })
 
-// 列出已保存的支付方式
+// List saved payment methods
 const paymentMethods = await sdk.store.payment.listPaymentMethods()
 ```
 
-## 🔍 状态映射
+## 🔍 Status Mapping
 
-| PayPal 状态 | Medusa 状态 | 说明 |
-|------------|------------|------|
-| `CREATED` | `PENDING` | 订单已创建 |
-| `SAVED` | `PENDING` | 订单已保存 |
-| `APPROVED` | `PENDING` | 买家已批准 |
-| `COMPLETED` | `CAPTURED` | 🔑 支付已完成 |
-| `VOIDED` | `CANCELED` | 支付已作废 |
-| `PAYER_ACTION_REQUIRED` | `REQUIRES_MORE` | 需要买家操作 |
+| PayPal Status | Medusa Status | Description |
+|--------------|--------------|-------------|
+| `CREATED` | `PENDING` | Order created |
+| `SAVED` | `PENDING` | Order saved |
+| `APPROVED` | `PENDING` | Buyer approved |
+| `COMPLETED` | `CAPTURED` | 🔑 Payment completed |
+| `VOIDED` | `CANCELED` | Payment voided |
+| `PAYER_ACTION_REQUIRED` | `REQUIRES_MORE` | Requires buyer action |
 
-## 🐛 故障排除
+## 🐛 Troubleshooting
 
-### 支付状态不更新
+### Payment status not updating
 
-确保 PayPal 状态正确映射为 Medusa 的 `CAPTURED` 状态。本 provider 已修复此问题。
+Ensure PayPal status is correctly mapped to Medusa's `CAPTURED` status. This provider handles this correctly.
 
-### 金额格式错误
+### Amount format errors
 
-PayPal 使用美元（dollars），Medusa 使用美分（cents）。本 provider 自动处理转换：
-- 发送给 PayPal: `3299 cents → $32.99`
-- 从 PayPal 接收: `$32.99 → 3299 cents`
+PayPal uses dollars, Medusa uses cents. This provider handles conversion automatically:
+- Sending to PayPal: `3299 cents → $32.99`
+- Receiving from PayPal: `$32.99 → 3299 cents`
 
-### Vault API 不可用
+### Vault API unavailable
 
-PayPal Vault API 目前**仅在美国可用**。确保你的 PayPal 账户支持此功能。
+PayPal Vault API is currently **only available in the United States**. Ensure your PayPal account supports this feature.
 
-## 📚 参考文档
+## 📚 Reference Documentation
 
 - [PayPal Orders API](https://developer.paypal.com/docs/api/orders/v2/)
 - [PayPal Payments API](https://developer.paypal.com/docs/api/payments/v2/)
 - [PayPal Vault API](https://developer.paypal.com/docs/api/payment-tokens/v3/)
 - [Medusa Payment Provider](https://docs.medusajs.com/resources/references/payment/provider)
 
-## 🤝 贡献
+## 🤝 Contributing
 
-欢迎提交 Issues 和 Pull Requests！
+Issues and Pull Requests are welcome!
 
-## 📄 许可
+## 📄 License
 
 MIT License
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-基于官方 [@medusajs/payment-stripe](https://github.com/medusajs/medusa/tree/develop/packages/modules/providers/payment-stripe) 的实现模式。
-
+Based on the implementation pattern of the official [@medusajs/payment-stripe](https://github.com/medusajs/medusa/tree/develop/packages/modules/providers/payment-stripe).

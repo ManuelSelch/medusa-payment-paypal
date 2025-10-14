@@ -1,6 +1,6 @@
 {
   "name": "@rd1988/medusa-payment-paypal",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "PayPal Payment Provider for Medusa v2.10+ using the latest PayPal Server SDK with full Vault API support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
