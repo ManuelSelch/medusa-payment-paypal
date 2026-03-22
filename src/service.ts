@@ -142,7 +142,7 @@ export default class PayPalProviderService extends AbstractPaymentProvider<PayPa
     } catch (error: any) {
       throw new MedusaError(
         MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
-        `PayPal initiatePayment failed: ${error.message || error}`
+        `PayPal initiatePayment failed: ${JSON.stringify(error?.result || error?.body || error?.message || error)}`
       )
     }
   }
