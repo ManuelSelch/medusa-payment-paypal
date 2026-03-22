@@ -291,7 +291,7 @@ export default class PayPalProviderService extends AbstractPaymentProvider<PayPa
         const currencyCode = (data?.purchase_units?.[0]?.amount?.currency_code || 'USD') as string
         refundRequest.amount = {
           currencyCode: currencyCode.toUpperCase(),
-          value: (amount / 100).toFixed(2)
+          value: amount.toFixed(2)
         }
       }
       
